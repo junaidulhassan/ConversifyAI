@@ -65,8 +65,6 @@ class Scraper:
             text=formatted_text,
             string = result_string
         )
-
-        return result_string, formatted_text
     
     
 
