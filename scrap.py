@@ -9,7 +9,7 @@ class Scraper:
     
     def __write_txt_file(self, text, string):
         # Define the file path
-        file_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Scraped_Text/text_file.txt"
+        file_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/text_file.txt/text_file.txt"
         line_length = 20
         
         # Format the text
@@ -53,7 +53,7 @@ class Scraper:
 
 
         # Combine all extracted text
-        all_text = headings+paragraphs+articles+block_quote+sections+list_items
+        all_text = headings+paragraphs+articles+block_quote+sections
         
         # Join the lines back together without empty lines
         result_string = ' '.join(all_text)

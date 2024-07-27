@@ -18,7 +18,7 @@ from langchain.vectorstores import pinecone
 class Retrieval_Augmented_Generation:
     
     def __init__(self):
-        pass
+        self.embedding_model = self.__embed()
     
     def __load_docs(self):
         try:
@@ -28,21 +28,27 @@ class Retrieval_Augmented_Generation:
             )
             
             docs = loader.load()
-            
             return docs
+        
         except Exception as e:
             print(f"Error loading documents: {e}")
             return None
     
     def __text_spliter(self, chunks_size=500, chunks_overlap=50):
         # Define the chunks and overlap
-        splitter = CharacterTextSplitter(
-            separator='\n',
+        # now define the chunks and overlap
+
+        chunks_size = 1000
+        chunks_overlap = 40
+
+        rec_splitter = RecursiveCharacterTextSplitter(
+            separators=["\n\n", "\n", "(?<=\. )", " ", ""],
             chunk_size=chunks_size,
-            chunk_overlap = chunks_overlap
-)
+            chunk_overlap=chunks_overlap,
+            is_separator_regex=False
+        )
         
-        split = splitter.split_documents(
+        split = rec_splitter.split_documents(
             self.__load_docs()
         )
         
@@ -52,13 +58,12 @@ class Retrieval_Augmented_Generation:
         # Embed the text
         embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
-            device="auto"
         )
         
         return embeddings
     
     def VectorDatabase(self):
-        chunk_size = 500
+        chunk_size = 1000
         chunk_overlap = 50
         
         split = self.__text_spliter(
@@ -66,14 +71,11 @@ class Retrieval_Augmented_Generation:
             chunks_overlap=chunk_overlap
         )
         
-        embedding = self.__embed()
-        
         db = Chroma.from_documents(
             documents=split,
-            embedding=embedding,
+            embedding=self.embedding_model,
             collection_name='Web_vectors',
             persist_directory='Docs/chroma/'
         )
         
         return db
-    
