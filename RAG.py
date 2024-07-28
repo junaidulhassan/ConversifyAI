@@ -97,6 +97,5 @@ class Retrieval_Augmented_Generation:
             db = self.VectorDatabase()
             db.delete_collection()
             return "Collection Deleted"
-            
-        
-
+    
+    
