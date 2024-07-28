@@ -19,7 +19,7 @@ from langchain.vectorstores import pinecone
 
 class Retrieval_Augmented_Generation:
     
-    __DB_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Web-Content/"
+    __DB_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Web-Content/Docs/Chroma"
     
     def __init__(self):
         self.embedding_model = self.__embed()
@@ -80,8 +80,7 @@ class Retrieval_Augmented_Generation:
             documents=split,
             embedding=self.embedding_model,
             collection_name='Web_vectors',
-            persist_directory="Web-Content/Docs/Chroma",
-            collection_name="MetaData"
+            persist_directory=self.__DB_path,
         )
         
         return db
@@ -94,16 +93,10 @@ class Retrieval_Augmented_Generation:
         if not os.path.exists(directory_path):
             print(f"The directory {directory_path} does not exist.")
             return
-
-        for filename in os.listdir(directory_path):
-            file_path = os.path.join(directory_path, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                    print(f"File {file_path} deleted")
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-                    print(f"Directory {file_path} deleted")
-            except Exception as e:
-                print(f"Failed to delete {file_path}. Reason: {e}")
+        else:
+            db = self.VectorDatabase()
+            db.delete_collection()
+            return "Collection Deleted"
+            
+        
 
