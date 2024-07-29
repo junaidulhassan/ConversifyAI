@@ -42,6 +42,9 @@ class RAG_Model:
             verbose=False
         )
         
+        # create vector database for fetch knowledge from database
+        self. database = self.rag.VectorDatabase()
+        
         # Set HuggingFace model repository ID
         __huggingfaceHub_rep_id = 'mistralai/Mistral-7B-Instruct-v0.3'
         
@@ -68,12 +71,10 @@ class RAG_Model:
     def PromptEngineering(self):
         # Define the prompt template
         template = """
-        Your name is **WEB-PILOT** a chatbot designed to answer user questions based on the provided context. 
-        If you don't know the answer, say "I don't know" and don't make up an answer. 
-        Use a maximum of five sentences and keep your answer informative.
+        Your name is **WEB-PILOT**, a chatbot that answers user questions based on provided scraped website context. 
+        If you don't know the answer, say "I don't know." Keep answers under 60 words, in simple and clear English.
         
         Chat History: {chat_history}
-        
         Context: {context}
         Question: {question}
         Answer:
@@ -86,13 +87,12 @@ class RAG_Model:
         
         # Delete all data in the directory and create a vector database
         # self.rag.delete_all_in_directory()
-        database = self.rag.VectorDatabase()
         
         # Create the chain with the prompt and memory
         chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=database.as_retriever(
+            retriever=self.database.as_retriever(
                 search_type="mmr",
                 search_kwargs={
                     'k': 3,  # Number of results to return
