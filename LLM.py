@@ -46,7 +46,7 @@ class ChatModel:
             task="text-generation",
             huggingfacehub_api_token=self.api_key,
             verbose=False,
-            streaming=True,
+            streaming=False, # Show output in streaming
             temperature=0.9,
             return_full_text=True,
             max_new_tokens=500,
