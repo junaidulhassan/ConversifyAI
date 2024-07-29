@@ -88,7 +88,7 @@ class RAG_Model:
             retriever = database.as_retriever(
                 search_type = "mmr",
                 search_kwargs = {
-                    'k':4,
+                    'k':3,
                     'fetch_k':50
                 }
             ),
@@ -122,5 +122,6 @@ class RAG_Model:
         response = response['result']
         response = self.clean_string(response)
         return response
+    
     
     

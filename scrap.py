@@ -49,11 +49,12 @@ class Scraper:
         articles = extract_text(soup.find_all('article'))
         sections = extract_text(soup.find_all('section'))
         block_quote = extract_text(soup.find_all('blockquote'))
+        tables = extract_text(soup.find_all('tr'))
 
 
 
         # Combine all extracted text
-        all_text = headings+paragraphs+articles+block_quote+sections
+        all_text = headings+paragraphs+articles+block_quote+sections+tables
         
         # Join the lines back together without empty lines
         result_string = ' '.join(all_text)
@@ -65,6 +66,8 @@ class Scraper:
             text=formatted_text,
             string = result_string
         )
+        
+        return result_string
     
     
 
