@@ -1,4 +1,5 @@
 import warnings as wn
+# Ignore warning messages
 wn.filterwarnings('ignore')
 import os
 import shutil
@@ -8,20 +9,20 @@ from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.embeddings import HuggingFaceEmbeddings
 
-from langchain.document_loaders import PyPDFLoader
-from langchain.document_loaders import TextLoader
+from langchain.document_loaders import PyPDFLoader, TextLoader
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 
-from langchain.vectorstores import Chroma
-from langchain.vectorstores import pinecone
+from langchain.vectorstores import Chroma, pinecone
 
+# Define the Retrieval_Augmented_Generation class
 class Retrieval_Augmented_Generation:
     
+    # Define the path for the database
     __DB_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Web-Content/Docs/Chroma"
     
     def __init__(self):
+        # Initialize the embedding model
         self.embedding_model = self.__embed()
     
     def __load_docs(self):
@@ -31,6 +32,7 @@ class Retrieval_Augmented_Generation:
                 file_path="/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/text_file.txt/text_file.txt"
             )
             
+            # Load documents using the loader
             docs = loader.load()
             return docs
         
@@ -40,11 +42,10 @@ class Retrieval_Augmented_Generation:
     
     def __text_spliter(self, chunks_size=500, chunks_overlap=50):
         # Define the chunks and overlap
-        # now define the chunks and overlap
-
         chunks_size = 1000
         chunks_overlap = 40
 
+        # Use RecursiveCharacterTextSplitter to split documents into chunks
         rec_splitter = RecursiveCharacterTextSplitter(
             separators=["\n\n", "\n", "(?<=\. )", " ", ""],
             chunk_size=chunks_size,
@@ -52,6 +53,7 @@ class Retrieval_Augmented_Generation:
             is_separator_regex=False
         )
         
+        # Split the loaded documents into chunks
         split = rec_splitter.split_documents(
             self.__load_docs()
         )
@@ -59,7 +61,7 @@ class Retrieval_Augmented_Generation:
         return split
     
     def __embed(self):
-        # Embed the text
+        # Create an embedding model
         embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
         )
@@ -67,15 +69,17 @@ class Retrieval_Augmented_Generation:
         return embeddings
     
     def VectorDatabase(self):
-        
+        # Define chunk size and overlap for splitting
         chunk_size = 1000
         chunk_overlap = 50
         
+        # Split the documents into chunks
         split = self.__text_spliter(
             chunks_size=chunk_size,
             chunks_overlap=chunk_overlap
         )
         
+        # Create a vector database using the split documents and embeddings
         db = Chroma.from_documents(
             documents=split,
             embedding=self.embedding_model,
@@ -85,17 +89,15 @@ class Retrieval_Augmented_Generation:
         
         return db
     
-        
     def delete_all_in_directory(self):
-        
+        # Define the directory path
         directory_path = self.__DB_path
     
         if not os.path.exists(directory_path):
             print(f"The directory {directory_path} does not exist.")
             return
         else:
+            # Delete the collection in the vector database
             db = self.VectorDatabase()
             db.delete_collection()
             return "Collection Deleted"
-    
-    

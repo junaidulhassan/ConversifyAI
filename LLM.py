@@ -1,4 +1,5 @@
 import warnings as wn
+# Ignore warning messages
 wn.filterwarnings('ignore')
 
 from langchain_community.llms import HuggingFaceHub
@@ -14,17 +15,17 @@ import json
 import os
 import re
 
-
-
+# Define ChatModel class
 class ChatModel: 
     
-    
     def __init__(self):
+        # Initialize API token for the large language model
         self.token = LargeLanguageModel()
         self.api_key = self.token.get_Key()
         
+        # Set up conversation memory
         self.memory = ConversationBufferWindowMemory(
-            k=3,
+            k=3,  # Number of messages to remember
             memory_key='chat_history', 
             return_messages=False, 
             human_prefix='Human',
@@ -32,14 +33,16 @@ class ChatModel:
             verbose=False
         )
         
-        
+        # Set HuggingFace model repository ID
         huggingfaceHub_rep_id = 'mistralai/Mistral-7B-Instruct-v0.3'
         
-        self.filter = ['**Human**:','Human:','**Human:**']
+        # Define filter terms to stop the generation
+        self.filter = ['**Human**:', 'Human:', '**Human:**']
         
+        # Set up the language model endpoint
         self.llm = HuggingFaceEndpoint(
             name="Web-Pilot",
-            repo_id= huggingfaceHub_rep_id,
+            repo_id=huggingfaceHub_rep_id,
             task="text-generation",
             huggingfacehub_api_token=self.api_key,
             verbose=False,
@@ -49,10 +52,10 @@ class ChatModel:
             max_new_tokens=500,
             stop_sequences=self.filter,
             repetition_penalty=1.1
-            )
+        )
     
     def PromptEngineering(self):
-        
+        # Define the prompt template
         prompt_template = """
         * Your name is **FITNESS RAT**, a fitness chatbot designed to motivate and guide people on their fitness journey. 
         * Provide clear and encouraging fitness advice and tips. 
@@ -65,21 +68,24 @@ class ChatModel:
         **You:**
         """
         
+        # Create a prompt with the template
         prompt = PromptTemplate(
-            input_variables=["chat_history","context"],
+            input_variables=["chat_history", "context"],
             template=prompt_template
         )
 
+        # Create the chain with the prompt and memory
         chain = LLMChain(
-            llm = self.llm,
-            prompt = prompt,
-            memory = self.memory,
+            llm=self.llm,
+            prompt=prompt,
+            memory=self.memory,
             verbose=False
         )
                 
         return chain
         
     def clean_string(self, input_text):
+        # Clean the string from unwanted filter terms
         terms = self.filter
         earliest_position = len(input_text)
         for term in terms:
@@ -89,11 +95,9 @@ class ChatModel:
         
         return input_text[:earliest_position].strip()
     
-
     def generateResponse(self, prompt):
+        # Generate a response using the prompt chain
         response = self.PromptEngineering().invoke(prompt)
         response = response['text']
         response = self.clean_string(response)
         return response
-    
-    
