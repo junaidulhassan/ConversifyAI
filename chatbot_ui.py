@@ -31,7 +31,7 @@ def reset_scrap_state():
 url = st.sidebar.text_input("Enter website URL you want to chat", 
                             "", placeholder="https://example.com",
                             on_change=reset_scrap_state
-                           )
+                        )
 
 # Scrape the website if a valid URL is entered
 if url:
