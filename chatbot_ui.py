@@ -24,6 +24,8 @@ def is_valid_url(url):
 
 def reset_scrap_state():
     st.session_state.scrap = None
+    st.session_state.model.load_Database()
+    
 
 # Input field for the URL
 url = st.sidebar.text_input("Enter website URL you want to chat", 
@@ -36,7 +38,9 @@ if url:
     if is_valid_url(url):
         if st.session_state.scrap is None:
             try:
-                st.session_state.scrap = Scraper(url=url)
+                st.session_state.scrap = Scraper(
+                    url=url
+                )
                 texts = st.session_state.scrap.scrape_website()
                 st.write(texts)
             except Exception as e:
@@ -55,7 +59,9 @@ if st.sidebar.button("Clear Chat History"):
 
 # Streamed response emulator
 def response_generator(prompt):
-    response = st.session_state.model.generateResponse(prompt=prompt)
+    response = st.session_state.model.generateResponse(
+        prompt=prompt
+    )
     return response
 
 st.markdown('<div style="text-align: center;"><h1>WEB PILOT</h1></div>', unsafe_allow_html=True)

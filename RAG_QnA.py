@@ -42,14 +42,12 @@ class RAG_Model:
             verbose=False
         )
         
-        # create vector database for fetch knowledge from database
-        self. database = self.rag.VectorDatabase()
         
         # Set HuggingFace model repository ID
         __huggingfaceHub_rep_id = 'mistralai/Mistral-7B-Instruct-v0.3'
         
         # Define filter terms to stop the generation
-        self.filter = ['**Human**:', 'Human:', '**Human:**']
+        self.filter = ['**Question**:', 'Question:', '**Question:**']
         
         # Set up the language model endpoint
         self.llm = HuggingFaceEndpoint(
@@ -68,7 +66,14 @@ class RAG_Model:
             repetition_penalty=1.1
         )
     
-    def PromptEngineering(self):
+    def load_Database(self):
+        # create vector database for fetch knowledge from database
+        self.database = self.rag.VectorDatabase()
+        self.database.delete_collection()
+        self.database = self.rag.VectorDatabase()
+
+    
+    def __PromptEngineering(self):
         # Define the prompt template
         template = """
         Your name is **WEB-PILOT**, a chatbot that answers user questions based on provided scraped website context. 
@@ -109,7 +114,7 @@ class RAG_Model:
                 
         return chain
         
-    def clean_string(self, input_text):
+    def __clean_string(self, input_text):
         # Clean the string from unwanted filter terms
         terms = self.filter
         earliest_position = len(input_text)
@@ -122,10 +127,10 @@ class RAG_Model:
     
     def generateResponse(self, prompt):
         # Generate a response using the prompt chain
-        chain = self.PromptEngineering()
+        chain = self.__PromptEngineering()
         response = chain.invoke({
             'query': prompt
         })
         response = response['result']
-        response = self.clean_string(response)
+        response = self.__clean_string(response)
         return response
