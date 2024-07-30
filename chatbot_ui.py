@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import re
+
 from LLM import ChatModel
 from RAG_QnA import RAG_Model
 from scrap import Scraper
@@ -24,8 +25,6 @@ def is_valid_url(url):
 
 def reset_scrap_state():
     st.session_state.scrap = None
-    st.session_state.model.load_Database()
-    
 
 # Input field for the URL
 url = st.sidebar.text_input("Enter website URL you want to chat", 

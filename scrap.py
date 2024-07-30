@@ -1,11 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+from RAG import Retrieval_Augmented_Generation
 
 
 class Scraper:
-    def __init__(self, url):
-        self.url = url
+    def __init__(self):
+        self.rag = Retrieval_Augmented_Generation()
     
     def __write_txt_file(self, text, string):
         # Define the file path
@@ -21,7 +22,7 @@ class Scraper:
             for i in range(0, len(words), line_length):
                 file.write(' '.join(words[i:i + line_length]) + '\n')
     
-    def scrape_website(self):
+    def scrape_website(self,url):
         # Define the headers to mimic a browser request
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
@@ -29,7 +30,10 @@ class Scraper:
         }
 
         # Send a GET request to the URL with headers
-        response = requests.get(self.url, headers=headers)
+        response = requests.get(
+            url, 
+            headers=headers
+        )
 
         # Check if the request was successful (status code 200)
         if response.status_code != 200:
@@ -66,6 +70,10 @@ class Scraper:
             text=formatted_text,
             string = result_string
         )
+        
+        # Now load the all scrape into database
+        
+        self.rag.VectorDatabase()
         
         return result_string
     

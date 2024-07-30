@@ -69,8 +69,6 @@ class RAG_Model:
     def load_Database(self):
         # create vector database for fetch knowledge from database
         self.database = self.rag.VectorDatabase()
-        self.database.delete_collection()
-        self.database = self.rag.VectorDatabase()
 
     
     def __PromptEngineering(self):
