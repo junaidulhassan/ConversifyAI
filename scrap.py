@@ -1,12 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-from RAG import Retrieval_Augmented_Generation
+from RAG import RetrievalAugmentedGeneration
 
 
 class Scraper:
     def __init__(self):
-        self.rag = Retrieval_Augmented_Generation()
+        
+        self.previous_url = None
+        
+        self.rag = RetrievalAugmentedGeneration()
+        self.embed = self.rag.embeddings
     
     def __write_txt_file(self, text, string):
         # Define the file path
@@ -22,8 +26,23 @@ class Scraper:
             for i in range(0, len(words), line_length):
                 file.write(' '.join(words[i:i + line_length]) + '\n')
     
+    def is_new_url(self, new_url):
+        if self.previous_url is not None and self.previous_url == new_url:
+            return False
+        else:
+            self.previous_url = new_url
+            return True
+    
     def scrape_website(self,url):
         # Define the headers to mimic a browser request
+        
+        if self.is_new_url(
+            new_url=url
+        ):
+            self.rag.window_mem.clear()
+        else:
+            pass
+        
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
@@ -58,13 +77,16 @@ class Scraper:
 
 
         # Combine all extracted text
-        all_text = headings+paragraphs+articles+block_quote+sections+tables
+        all_text = headings+paragraphs+articles+block_quote+sections+tables+list_items
         
         # Join the lines back together without empty lines
         result_string = ' '.join(all_text)
 
         # Clean up any extra whitespace
-        formatted_text = re.sub(r'\s+', ' ', result_string)
+        formatted_text = re.sub(
+            r'\s+', ' ', 
+            result_string
+        )
         
         self.__write_txt_file(
             text=formatted_text,
@@ -72,10 +94,9 @@ class Scraper:
         )
         
         # Now load the all scrape into database
-        
-        self.rag.VectorDatabase()
+        self.rag.VectorDatabase(
+            embeddings=self.embed
+        )
         
         return result_string
     
-    
-

@@ -1,11 +1,16 @@
+# import defualf libraries
 import warnings as wn
 import os
 import shutil
+
+# import LLMs framework libraries
 from langchain_community.llms import HuggingFaceHub
 from api_token import LargeLanguageModel
 from langchain_huggingface import HuggingFaceEndpoint
 from langchain.chains import LLMChain, RetrievalQA
 from langchain.prompts import PromptTemplate
+
+# import memory modelue for LLM conversation
 from langchain.memory import ConversationBufferWindowMemory, ConversationBufferMemory
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -24,12 +29,11 @@ class RetrievalAugmentedGeneration:
     __DB_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Web-Content/Docs/Chroma"
     
     def __init__(self):
+        # This variable intialized for URL Checker
+        self.previous_url = None
         # Initialize API token for the large language model
         self.token = LargeLanguageModel()
         self.api_key = self.token.get_Key()
-        
-        # Initialize the embedding model
-        self.embedding_model = self.__embed()
         
         # Set up conversation memory
         self.mem = ConversationBufferMemory(
@@ -52,6 +56,8 @@ class RetrievalAugmentedGeneration:
             verbose=False
         )
         
+    
+    def Load_LLM(self):
         # Set HuggingFace model repository ID
         __huggingfaceHub_rep_id = 'mistralai/Mistral-7B-Instruct-v0.3'
         
@@ -72,8 +78,12 @@ class RetrievalAugmentedGeneration:
             max_new_tokens=500,
             # Stop sequences is filter for stop criteria
             stop_sequences=self.filter,
-            repetition_penalty=1.1
+            repetition_penalty=1.1,
+            top_k=10,
+            top_p=0.95,
+            typical_p=0.95,
         )
+        
     
     def __load_docs(self):
         try:
@@ -110,15 +120,13 @@ class RetrievalAugmentedGeneration:
         
         return split
     
-    def __embed(self):
+    def Load_embed(self):
         # Create an embedding model
-        embeddings = HuggingFaceEmbeddings(
+        self.embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
         )
-        
-        return embeddings
-    
-    def VectorDatabase(self):
+            
+    def VectorDatabase(self, embeddings):
         # Define chunk size and overlap for splitting
         chunk_size = 1000
         chunk_overlap = 50
@@ -132,7 +140,7 @@ class RetrievalAugmentedGeneration:
         # Create a vector database using the split documents and embeddings
         db = Chroma.from_documents(
             documents=split,
-            embedding=self.embedding_model,
+            embedding=embeddings,
             collection_name='Web_vectors',
             persist_directory=self.__DB_path,
         )
@@ -155,6 +163,7 @@ class RetrievalAugmentedGeneration:
             return "Collection Deleted"
 
     def __PromptEngineering(self):
+        
         # Define the prompt template
         template = """
         Your name is **WEB-PILOT**, a chatbot that answers user questions based on provided scraped website context. 
@@ -175,7 +184,9 @@ class RetrievalAugmentedGeneration:
         chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=self.VectorDatabase().as_retriever(
+            retriever=self.VectorDatabase(
+                embeddings=self.embeddings
+            ).as_retriever(
                 search_type="mmr", # search type is the techique to search documents
                 search_kwargs={
                     'k': 3,  # Number of results to return
@@ -209,7 +220,10 @@ class RetrievalAugmentedGeneration:
         response = chain.invoke({
             'query': prompt
         })
+        
         response = response['result']
-        response = self.__clean_string(response)
+        response = self.__clean_string(
+            input_text=response
+        )
         return response
     
