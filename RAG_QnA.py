@@ -47,7 +47,11 @@ class RAG_Model:
         __huggingfaceHub_rep_id = 'mistralai/Mistral-7B-Instruct-v0.3'
         
         # Define filter terms to stop the generation
-        self.filter = ['**Question**:', 'Question:', '**Question:**']
+        self.filter = [
+            'Question:', 
+            '**Question:**',
+            'Human:'
+        ]
         
         # Set up the language model endpoint
         self.llm = HuggingFaceEndpoint(
@@ -68,7 +72,10 @@ class RAG_Model:
     
     def load_Database(self):
         # create vector database for fetch knowledge from database
-        self.database = self.rag.VectorDatabase()
+        self.database = self.rag.VectorDatabase() 
+        self.database.delete_collection()
+        self.database = self.rag.VectorDatabase() 
+
 
     
     def __PromptEngineering(self):

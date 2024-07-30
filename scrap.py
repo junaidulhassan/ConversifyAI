@@ -1,28 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-from RAG import RetrievalAugmentedGeneration
-from langchain.embeddings import HuggingFaceEmbeddings
 
 
 class Scraper:
     def __init__(self):
-        
         self.previous_url = None
-        self.embed = self.Load_embed()
-        
-        self.rag = RetrievalAugmentedGeneration(
-            embd=self.embed
-        )
-    
-    
-    def Load_embed(self):
-        # Create an embedding model
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-        )
-        
-        return embeddings
         
     
     def __write_txt_file(self, text, string):
@@ -52,7 +35,8 @@ class Scraper:
         if self.is_new_url(
             new_url=url
         ):
-            self.rag.window_mem.clear()
+            # self.rag.window_mem.clear()
+            pass
         else:
             pass
         
@@ -69,7 +53,7 @@ class Scraper:
 
         # Check if the request was successful (status code 200)
         if response.status_code != 200:
-            return f"Failed to retrieve the webpage. Status code: {response.status_code}"
+            return response.status_code
 
         # Parse the HTML content using BeautifulSoup
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -106,8 +90,5 @@ class Scraper:
             string = result_string
         )
         
-        # Now load the all scrape into database
-        self.rag.VectorDatabase()
-        
-        return result_string
+        return response.status_code
     

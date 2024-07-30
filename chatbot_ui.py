@@ -24,7 +24,7 @@ def is_valid_url(url):
 
 
 def reset_scrap_state():
-    st.session_state.scrap = None
+    st.session_state.scrap = Scraper()
 
 # Input field for the URL
 url = st.sidebar.text_input("Enter website URL you want to chat", 
@@ -37,10 +37,9 @@ if url:
     if is_valid_url(url):
         if st.session_state.scrap is None:
             try:
-                st.session_state.scrap = Scraper(
-                    url=url
+                texts = st.session_state.scrap.scrape_website(
+                    url = url
                 )
-                texts = st.session_state.scrap.scrape_website()
                 st.write(texts)
             except Exception as e:
                 st.sidebar.error(f"Error scraping the website: {e}")
