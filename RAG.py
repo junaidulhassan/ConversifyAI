@@ -28,12 +28,14 @@ class RetrievalAugmentedGeneration:
     # Define the path for the database
     __DB_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Web-Content/Docs/Chroma"
     
-    def __init__(self):
+    def __init__(self,embd):
         # This variable intialized for URL Checker
         self.previous_url = None
         # Initialize API token for the large language model
         self.token = LargeLanguageModel()
         self.api_key = self.token.get_Key()
+        
+        self.embeddings = embd
         
         # Set up conversation memory
         self.mem = ConversationBufferMemory(
@@ -120,13 +122,13 @@ class RetrievalAugmentedGeneration:
         
         return split
     
-    def Load_embed(self):
-        # Create an embedding model
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-        )
+    # def Load_embed(self):
+    #     # Create an embedding model
+    #     self.embeddings = HuggingFaceEmbeddings(
+    #         model_name="sentence-transformers/all-MiniLM-L6-v2",
+    #     )
             
-    def VectorDatabase(self, embeddings):
+    def VectorDatabase(self):
         # Define chunk size and overlap for splitting
         chunk_size = 1000
         chunk_overlap = 50
@@ -138,15 +140,13 @@ class RetrievalAugmentedGeneration:
         )
         
         # Create a vector database using the split documents and embeddings
-        db = Chroma.from_documents(
+        self.db = Chroma.from_documents(
             documents=split,
-            embedding=embeddings,
+            embedding=self.embeddings,
             collection_name='Web_vectors',
             persist_directory=self.__DB_path,
         )
-        
-        return db
-    
+            
     def delete_all_in_directory(self):
         # Define the directory path
         directory_path = self.__DB_path
@@ -184,9 +184,7 @@ class RetrievalAugmentedGeneration:
         chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=self.VectorDatabase(
-                embeddings=self.embeddings
-            ).as_retriever(
+            retriever=self.db.as_retriever(
                 search_type="mmr", # search type is the techique to search documents
                 search_kwargs={
                     'k': 3,  # Number of results to return

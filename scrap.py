@@ -2,15 +2,28 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from RAG import RetrievalAugmentedGeneration
+from langchain.embeddings import HuggingFaceEmbeddings
 
 
 class Scraper:
     def __init__(self):
         
         self.previous_url = None
+        self.embed = self.Load_embed()
         
-        self.rag = RetrievalAugmentedGeneration()
-        self.embed = self.rag.embeddings
+        self.rag = RetrievalAugmentedGeneration(
+            embd=self.embed
+        )
+    
+    
+    def Load_embed(self):
+        # Create an embedding model
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+        )
+        
+        return embeddings
+        
     
     def __write_txt_file(self, text, string):
         # Define the file path
@@ -94,9 +107,7 @@ class Scraper:
         )
         
         # Now load the all scrape into database
-        self.rag.VectorDatabase(
-            embeddings=self.embed
-        )
+        self.rag.VectorDatabase()
         
         return result_string
     
