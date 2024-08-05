@@ -28,16 +28,12 @@ if "scrap" not in st.session_state:
     st.session_state.scrap = Scraper()
     print("Scrapping Done")
 
-
-def Update_Database():
-    st.session_state.model.load_Database()
     
     
     
 # Input field for the URL
 url = st.sidebar.text_input("Enter website URL you want to chat", 
-                            "", placeholder="https://example.com",
-                            on_change=Update_Database
+                            "", placeholder="https://example.com"
                         )
 
 # Scrape the website if a valid URL is entered
@@ -47,20 +43,30 @@ if url:
             response = st.session_state.scrap.scrape_website(
                 url = url
             )
-            st.write(response)
+            if response == 200:
+                st.session_state.model.load_Database()
+                st.sidebar.success("Scrape Website Successfully..")
+            else:
+                st.sidebar.error("This Websites does not allow to scrap his content..")
         except Exception as e:
                 st.sidebar.error(f"Error scraping the website: {e}")
     else:
         st.sidebar.error("Invalid URL format. Please enter a correct URL.")
+        
+
+check = True
+if url is "":
+    check = False
+    
 
 if st.sidebar.button("Clear Chat"):
     st.session_state.messages = []
-    st.experimental_rerun()
+    st.rerun()
 
 if st.sidebar.button("Clear Chat History"):
     st.session_state.messages = []
     st.session_state.model.window_mem.clear()
-    st.experimental_rerun()
+    st.rerun()
 
 # Streamed response emulator
 def response_generator(prompt):
@@ -83,22 +89,25 @@ for message in st.session_state.messages:
 
 # Accept user input
 if prompt := st.chat_input("Enter your prompt here..."):
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    # Display user message in chat message container
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    if check:
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-    # Display assistant response in chat message container
-    with st.chat_message("assistant"):
-        with st.spinner("Generating response..."):
-            response = ""
-            response_container = st.empty()  # Create an empty container for the response
-            for word in response_generator(prompt):
-                response += word
-                response_container.markdown(response.replace("\n", "  \n") + "▌")  # Add double space for markdown newline
-                time.sleep(0.03)
-                response_container.markdown(response.replace("\n", "  \n"))  # Add double space for markdown newline
-
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            with st.spinner("Generating response..."):
+                response = ""
+                response_container = st.empty()  # Create an empty container for the response
+                for word in response_generator(prompt):
+                    response += word
+                    response_container.markdown(response.replace("\n", "  \n") + "▌")  # Add double space for markdown newline
+                    time.sleep(0.04)
+                    response_container.markdown(response.replace("\n", "  \n"))  # Add double space for markdown newline
+                    
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": response})
+    else:
+        st.error("Please add the website URL first.")

@@ -9,6 +9,9 @@ from langchain.chains import LLMChain, RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory, ConversationBufferMemory
 from RAG import Retrieval_Augmented_Generation
+from langchain_openai import ChatOpenAI
+import os
+import openai
 
 # Define RAG_Model class
 class RAG_Model: 
@@ -17,6 +20,12 @@ class RAG_Model:
         # Initialize API token for the large language model
         self.token = LargeLanguageModel()
         self.api_key = self.token.get_Key()
+        self.gpt_api_key = self.token.get_gpt_key()
+        os.environ['OPENAI_API_KEY'] = self.gpt_api_key
+        
+        # Initialize the open-ai key
+        openai.api_key = os.environ['OPENAI_API_KEY']
+        
         
         # Initialize Retrieval Augmented Generation (RAG)
         self.rag = Retrieval_Augmented_Generation()
@@ -69,6 +78,13 @@ class RAG_Model:
             stop_sequences=self.filter,
             repetition_penalty=1.1
         )
+        
+        self.gpt_llm = ChatOpenAI(
+            model='gpt-4o-mini',
+            temperature=0.1,
+            max_tokens=200,
+            stop_sequences=self.filter,
+        )
     
     def load_Database(self):
         # create vector database for fetch knowledge from database
@@ -81,7 +97,7 @@ class RAG_Model:
         # Define the prompt template
         template = """
         Your name is **WEB-PILOT**, a chatbot that answers user questions based on provided scraped website context. 
-        If you don't know the answer, say "I don't know." Keep answers under 60 words, in simple and clear English.
+        Keep answers under 60 words, in simple and clear English.
         
         Chat History: {chat_history}
         Context: {context}
@@ -99,12 +115,12 @@ class RAG_Model:
         
         # Create the chain with the prompt and memory
         chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
+            llm=self.gpt_llm,
             chain_type="stuff",
             retriever=self.database.as_retriever(
                 search_type="mmr",
                 search_kwargs={
-                    'k': 3,  # Number of results to return
+                    'k': 5,  # Number of results to return
                     'fetch_k': 50  # Number of results to fetch
                 }
             ),
