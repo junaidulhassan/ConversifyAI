@@ -23,25 +23,32 @@ def is_valid_url(url):
     return re.match(regex, url) is not None
 
 
-def reset_scrap_state():
+if "scrap" not in st.session_state:
     st.session_state.scrap = Scraper()
+    st.session_state.scrap = Scraper()
+    print("Scrapping Done")
 
+
+def Update_Database():
+    st.session_state.model.load_Database()
+    
+    
+    
 # Input field for the URL
 url = st.sidebar.text_input("Enter website URL you want to chat", 
                             "", placeholder="https://example.com",
-                            on_change=reset_scrap_state
+                            on_change=Update_Database
                         )
 
 # Scrape the website if a valid URL is entered
 if url:
     if is_valid_url(url):
-        if st.session_state.scrap is None:
-            try:
-                texts = st.session_state.scrap.scrape_website(
-                    url = url
-                )
-                st.write(texts)
-            except Exception as e:
+        try:
+            response = st.session_state.scrap.scrape_website(
+                url = url
+            )
+            st.write(response)
+        except Exception as e:
                 st.sidebar.error(f"Error scraping the website: {e}")
     else:
         st.sidebar.error("Invalid URL format. Please enter a correct URL.")

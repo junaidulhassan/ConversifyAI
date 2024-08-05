@@ -72,6 +72,7 @@ class RAG_Model:
     
     def load_Database(self):
         # create vector database for fetch knowledge from database
+        print("Its run..")
         self.database = self.rag.VectorDatabase() 
         self.database.delete_collection()
         self.database = self.rag.VectorDatabase() 
