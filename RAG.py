@@ -8,6 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
 
 from langchain.document_loaders import PyPDFLoader, TextLoader
 
@@ -19,7 +20,7 @@ from langchain.vectorstores import Chroma, pinecone
 class Retrieval_Augmented_Generation:
     
     # Define the path for the database
-    __DB_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Web-Content/Docs/Chroma"
+    __DB_path = "/Docs/Chroma"
     
     def __init__(self):
         # Initialize the embedding model
@@ -80,11 +81,9 @@ class Retrieval_Augmented_Generation:
         )
         
         # Create a vector database using the split documents and embeddings
-        db = Chroma.from_documents(
+        db = FAISS.from_documents(
             documents=split,
-            embedding=self.embedding_model,
-            collection_name='Web_vectors',
-            persist_directory=self.__DB_path,
+            embedding=self.embedding_model
         )
         
         return db
