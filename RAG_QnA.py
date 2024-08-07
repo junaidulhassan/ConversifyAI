@@ -17,15 +17,7 @@ import openai
 class RAG_Model: 
     
     def __init__(self):
-        # Initialize API token for the large language model
-        self.token = LargeLanguageModel()
-        self.api_key = self.token.get_Key()
-        self.gpt_api_key = self.token.get_gpt_key()
-        os.environ['OPENAI_API_KEY'] = self.gpt_api_key
-        
-        # Initialize the open-ai key
-        openai.api_key = os.environ['OPENAI_API_KEY']
-        
+       
         
         # Initialize Retrieval Augmented Generation (RAG)
         self.rag = Retrieval_Augmented_Generation()
@@ -63,21 +55,21 @@ class RAG_Model:
         ]
         
         # Set up the language model endpoint
-        self.llm = HuggingFaceEndpoint(
-            name="Web-Pilot",
-            repo_id=__huggingfaceHub_rep_id,
-            task="text-generation",
-            huggingfacehub_api_token=self.api_key,
-            verbose=False,
-            # show output in text streaming
-            streaming=True,
-            temperature=0.9,
-            return_full_text=True,
-            max_new_tokens=500,
-            # Stop sequences is filter for stop criteria
-            stop_sequences=self.filter,
-            repetition_penalty=1.1
-        )
+        # self.llm = HuggingFaceEndpoint(
+        #     name="Web-Pilot",
+        #     repo_id=__huggingfaceHub_rep_id,
+        #     task="text-generation",
+        #     huggingfacehub_api_token=self.api_key,
+        #     verbose=False,
+        #     # show output in text streaming
+        #     streaming=True,
+        #     temperature=0.9,
+        #     return_full_text=True,
+        #     max_new_tokens=500,
+        #     # Stop sequences is filter for stop criteria
+        #     stop_sequences=self.filter,
+        #     repetition_penalty=1.1
+        # )
         
         self.gpt_llm = ChatOpenAI(
             model='gpt-4o-mini',
@@ -86,13 +78,13 @@ class RAG_Model:
             stop_sequences=self.filter,
         )
     
-    def load_Database(self):
+    def load_Database(self,pdf_url=None,is_pdf = True):
         # create vector database for fetch knowledge from database
-        print("Its run..")
-        self.database = self.rag.VectorDatabase() 
+        self.database = self.rag.VectorDatabase(
+            file_url=pdf_url,
+            is_pdf=is_pdf
+        ) 
 
-
-    
     def __PromptEngineering(self):
         # Define the prompt template
         template = """
@@ -152,5 +144,5 @@ class RAG_Model:
             'query': prompt
         })
         response = response['result']
-        response = self.__clean_string(response)
+        # response = self.__clean_string(response)
         return response

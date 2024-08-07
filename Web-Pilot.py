@@ -2,9 +2,10 @@ import streamlit as st
 import time
 import re
 
-from LLM import ChatModel
 from RAG_QnA import RAG_Model
 from scrap import Scraper
+import requests
+
 
 # Initialize the model only once and store it in the session state
 if "model" not in st.session_state:
@@ -25,39 +26,56 @@ def is_valid_url(url):
 
 if "scrap" not in st.session_state:
     st.session_state.scrap = Scraper()
-    st.session_state.scrap = Scraper()
-    print("Scrapping Done")
+    print("Scrapping instance created")
 
+# Add a flag to track if scraping and database loading are done
+if "scraping_done" not in st.session_state:
+    st.session_state.scraping_done = False
     
-    
-    
+def is_pdf_url(url):
+    if url.lower().endswith('.pdf'):
+        return True
+    try:
+        response = requests.head(url, allow_redirects=True)
+        content_type = response.headers.get('Content-Type', '')
+        return content_type.lower() == 'application/pdf'
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
+        return False
+
 # Input field for the URL
 url = st.sidebar.text_input("Enter website URL you want to chat", 
-                            "", placeholder="https://example.com"
-                        )
+                            "", placeholder="https://example.com")
 
-# Scrape the website if a valid URL is entered
-if url:
-    if is_valid_url(url):
-        try:
-            response = st.session_state.scrap.scrape_website(
-                url = url
+# Scrape the website if a valid URL is entered and scraping is not already done
+if url and not st.session_state.scraping_done:
+    if is_valid_url(
+        url=url
+    ):
+        if is_pdf_url(url):
+            st.session_state.model.load_Database(
+                pdf_url=url,
+                is_pdf=True
             )
-            if response == 200:
-                st.session_state.model.load_Database()
-                st.sidebar.success("Scrape Website Successfully..")
-            else:
-                st.sidebar.error("This Websites does not allow to scrap his content..")
-        except Exception as e:
+        else:
+            try:
+                response = st.session_state.scrap.scrape_website(
+                    url=url
+                )
+                if response == 200:
+                    st.session_state.model.load_Database()
+                    print("LOAD DATABASE in streamlit code...")
+                    st.sidebar.success("Scraped website successfully.")
+                    st.session_state.scraping_done = True
+                else:
+                    st.sidebar.error("This website does not allow scraping its content.")
+            except Exception as e:
                 st.sidebar.error(f"Error scraping the website: {e}")
     else:
         st.sidebar.error("Invalid URL format. Please enter a correct URL.")
         
-
-check = True
-if url is "":
-    check = False
-    
+if url == "":
+    st.session_state.scraping_done = False
 
 if st.sidebar.button("Clear Chat"):
     st.session_state.messages = []
@@ -73,10 +91,14 @@ def response_generator(prompt):
     response = st.session_state.model.generateResponse(
         prompt=prompt
     )
+    
     return response
 
-st.markdown('<div style="text-align: center;"><h1>WEB PILOT</h1></div>', unsafe_allow_html=True)
-st.markdown('<div style="text-align: center;">Chat with Any Website 😊</div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align: center;"><h1>WEB PILOT</h1></div>', 
+            unsafe_allow_html=True)
+
+st.markdown('<div style="text-align: center;">Chat with Any Website 😊</div>', 
+            unsafe_allow_html=True)
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -89,9 +111,12 @@ for message in st.session_state.messages:
 
 # Accept user input
 if prompt := st.chat_input("Enter your prompt here..."):
-    if check:
+    if st.session_state.scraping_done:
         # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.messages.append({
+            "role": "user", 
+            "content": prompt
+        })
         # Display user message in chat message container
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -101,13 +126,19 @@ if prompt := st.chat_input("Enter your prompt here..."):
             with st.spinner("Generating response..."):
                 response = ""
                 response_container = st.empty()  # Create an empty container for the response
-                for word in response_generator(prompt):
+                for word in response_generator(
+                    prompt=prompt
+                ):
                     response += word
                     response_container.markdown(response.replace("\n", "  \n") + "▌")  # Add double space for markdown newline
                     time.sleep(0.04)
                     response_container.markdown(response.replace("\n", "  \n"))  # Add double space for markdown newline
                     
         # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({
+            "role": "assistant", 
+            "content": response
+        })
+        
     else:
         st.error("Please add the website URL first.")

@@ -35,11 +35,40 @@ class Retrieval_Augmented_Generation:
             
             # Load documents using the loader
             docs = loader.load()
+            print("Docs load from file...")
             return docs
         
         except Exception as e:
             print(f"Error loading documents: {e}")
             return None
+    
+    def __load_pdf(self,file_path):
+        # define the spilter docs properties
+        chunk_size = 1000
+        chunks_overlap = 40
+        
+        splitter = RecursiveCharacterTextSplitter(
+            separators=["\n\n", "\n", "(?<=\. )", " ", ""],
+            keep_separator=True,
+            chunk_size=chunk_size,
+            chunks_overlap=chunks_overlap,
+            is_separator_regex=False,
+        )
+        
+        try:
+            # Load documents from PDF file path
+            loader = PyPDFLoader(
+                file_path=file_path,
+                extract_images=True
+            )
+        except Exception as e:
+            print("Error to load pdf files")
+        finally:
+            docs = loader.load()
+            split = splitter.split_documents(
+                documents=docs
+            )
+            return split
     
     def __text_spliter(self, chunks_size=500, chunks_overlap=50):
         # Define the chunks and overlap
@@ -66,20 +95,26 @@ class Retrieval_Augmented_Generation:
         embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
         )
+        print("Embedding Runnings...")
         
         return embeddings
     
-    def VectorDatabase(self):
+    def VectorDatabase(self, is_pdf=False,file_url=None):
         # Define chunk size and overlap for splitting
         chunk_size = 1000
         chunk_overlap = 50
         
-        # Split the documents into chunks
-        split = self.__text_spliter(
-            chunks_size=chunk_size,
-            chunks_overlap=chunk_overlap
-        )
+        if is_pdf:
+            split = self.__load_pdf(
+                file_path=file_url
+            )
+        else:
+            split = self.__text_spliter(
+                chunks_size=chunk_size,
+                chunks_overlap=chunk_overlap
+            )
         
+        print("Database Running..")
         # Create a vector database using the split documents and embeddings
         db = FAISS.from_documents(
             documents=split,
