@@ -12,7 +12,7 @@ from langchain.vectorstores import FAISS
 
 from langchain.document_loaders import PyPDFLoader, TextLoader
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from langchain.vectorstores import Chroma, pinecone
 
@@ -44,22 +44,20 @@ class Retrieval_Augmented_Generation:
     
     def __load_pdf(self,file_path):
         # define the spilter docs properties
-        chunk_size = 1000
+        chunks_size = 1000
         chunks_overlap = 40
         
         splitter = RecursiveCharacterTextSplitter(
-            separators=["\n\n", "\n", "(?<=\. )", " ", ""],
-            keep_separator=True,
-            chunk_size=chunk_size,
-            chunks_overlap=chunks_overlap,
-            is_separator_regex=False,
+            # Set a really small chunk size, just to show.
+            chunk_size=chunks_size,
+            chunk_overlap=chunks_overlap,
+            length_function=len,
+            is_separator_regex=False
         )
-        
         try:
             # Load documents from PDF file path
             loader = PyPDFLoader(
                 file_path=file_path,
-                extract_images=True
             )
         except Exception as e:
             print("Error to load pdf files")
@@ -80,6 +78,7 @@ class Retrieval_Augmented_Generation:
             separators=["\n\n", "\n", "(?<=\. )", " ", ""],
             chunk_size=chunks_size,
             chunk_overlap=chunks_overlap,
+            length_function=len,
             is_separator_regex=False
         )
         
@@ -108,6 +107,7 @@ class Retrieval_Augmented_Generation:
             split = self.__load_pdf(
                 file_path=file_url
             )
+            print("Load Pdf data Done...")
         else:
             split = self.__text_spliter(
                 chunks_size=chunk_size,

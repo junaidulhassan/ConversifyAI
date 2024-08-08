@@ -17,7 +17,14 @@ import openai
 class RAG_Model: 
     
     def __init__(self):
-       
+        # Initialize API token for the large language model
+        self.token = LargeLanguageModel()
+        self.api_key = self.token.get_Key()
+        self.gpt_api_key = self.token.get_gpt_key()
+        os.environ['OPENAI_API_KEY'] = self.gpt_api_key
+        
+        # Initialize the open-ai key
+        # openai.api_key = os.environ['OPENAI_API_KEY']
         
         # Initialize Retrieval Augmented Generation (RAG)
         self.rag = Retrieval_Augmented_Generation()
@@ -31,7 +38,7 @@ class RAG_Model:
             input_key='question',
             verbose=False
         )
-        
+   
         # Set up window memory for conversation
         self.window_mem = ConversationBufferWindowMemory(
             k=3,  # Number of messages to remember
@@ -43,9 +50,16 @@ class RAG_Model:
             verbose=False
         )
         
+        self.Load_llm()
         
+    
+    def Load_llm(self,llm_model = 0):    
         # Set HuggingFace model repository ID
-        __huggingfaceHub_rep_id = 'mistralai/Mistral-7B-Instruct-v0.3'
+        rep_ids = [
+            'meta-llama/Meta-Llama-3-8B-Instruct',
+            'mistralai/Mistral-7B-Instruct-v0.3',
+            'tiiuae/falcon-7b-instruct'
+        ]
         
         # Define filter terms to stop the generation
         self.filter = [
@@ -55,30 +69,32 @@ class RAG_Model:
         ]
         
         # Set up the language model endpoint
-        # self.llm = HuggingFaceEndpoint(
-        #     name="Web-Pilot",
-        #     repo_id=__huggingfaceHub_rep_id,
-        #     task="text-generation",
-        #     huggingfacehub_api_token=self.api_key,
-        #     verbose=False,
-        #     # show output in text streaming
-        #     streaming=True,
-        #     temperature=0.9,
-        #     return_full_text=True,
-        #     max_new_tokens=500,
-        #     # Stop sequences is filter for stop criteria
-        #     stop_sequences=self.filter,
-        #     repetition_penalty=1.1
-        # )
-        
-        self.gpt_llm = ChatOpenAI(
-            model='gpt-4o-mini',
-            temperature=0.1,
-            max_tokens=200,
+        self.llm = HuggingFaceEndpoint(
+            name="Web-Pilot",
+            repo_id= rep_ids[llm_model],
+            task="text-generation",
+            huggingfacehub_api_token=self.api_key,
+            verbose=False,
+            # show output in text streaming
+            streaming=True,
+            temperature=0.9,
+            return_full_text=True,
+            max_new_tokens=500,
+            # Stop sequences is filter for stop criteria
             stop_sequences=self.filter,
+            repetition_penalty=1.1
         )
+        
+        print("Model Loading Done..")
+        
+        # self.gpt_llm = ChatOpenAI(
+        #     model='gpt-4o-mini',
+        #     temperature=0.1,
+        #     max_tokens=200,
+        #     stop_sequences=self.filter,
+        # )
     
-    def load_Database(self,pdf_url=None,is_pdf = True):
+    def load_Database(self,pdf_url=None,is_pdf = False):
         # create vector database for fetch knowledge from database
         self.database = self.rag.VectorDatabase(
             file_url=pdf_url,
@@ -107,7 +123,7 @@ class RAG_Model:
         
         # Create the chain with the prompt and memory
         chain = RetrievalQA.from_chain_type(
-            llm=self.gpt_llm,
+            llm=self.llm,
             chain_type="stuff",
             retriever=self.database.as_retriever(
                 search_type="mmr",
@@ -137,6 +153,14 @@ class RAG_Model:
         
         return input_text[:earliest_position].strip()
     
+    def remove_unwanted_suffixes(text):
+        suffixes = ["</k>","</s>","<jj>"]
+        for suffix in suffixes:
+            if text.endswith(suffix):
+                text = text[: -len(suffix)]
+                return text
+    
+    
     def generateResponse(self, prompt):
         # Generate a response using the prompt chain
         chain = self.__PromptEngineering()
@@ -144,5 +168,4 @@ class RAG_Model:
             'query': prompt
         })
         response = response['result']
-        # response = self.__clean_string(response)
         return response
