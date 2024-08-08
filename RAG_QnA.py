@@ -153,13 +153,12 @@ class RAG_Model:
         
         return input_text[:earliest_position].strip()
     
-    def remove_unwanted_suffixes(text):
-        suffixes = ["</k>","</s>","<jj>"]
+    def remove_unwanted_suffixes(self,text):
+        suffixes = ["</s>", "<|eot_id|>"]
         for suffix in suffixes:
             if text.endswith(suffix):
-                text = text[: -len(suffix)]
-                return text
-    
+                return text[: -len(suffix)]
+        return text    
     
     def generateResponse(self, prompt):
         # Generate a response using the prompt chain
@@ -168,4 +167,5 @@ class RAG_Model:
             'query': prompt
         })
         response = response['result']
+        response = self.remove_unwanted_suffixes(response)
         return response
