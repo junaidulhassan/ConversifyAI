@@ -94,9 +94,11 @@ class RAG_Model:
         #     stop_sequences=self.filter,
         # )
     
-    def load_Database(self,pdf_url=None,is_pdf = False):
+    def load_Database(self,pdf_url=None,is_pdf = False,pdf_text = None, is_pdf_file=False):
         # create vector database for fetch knowledge from database
         self.database = self.rag.VectorDatabase(
+            text=pdf_text,
+            is_pdf_file=is_pdf_file,
             file_url=pdf_url,
             is_pdf=is_pdf
         ) 

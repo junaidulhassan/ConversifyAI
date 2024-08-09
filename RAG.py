@@ -13,14 +13,14 @@ from langchain.vectorstores import FAISS
 from langchain.document_loaders import PyPDFLoader, TextLoader
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-from langchain.vectorstores import Chroma, pinecone
+from langchain.schema import Document
 
 # Define the Retrieval_Augmented_Generation class
 class Retrieval_Augmented_Generation:
     
     # Define the path for the database
     __DB_path = "/Docs/Chroma"
+    __store_text_file ="/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/text_file.txt/text_file.txt"
     
     def __init__(self):
         # Initialize the embedding model
@@ -30,7 +30,7 @@ class Retrieval_Augmented_Generation:
         try:
             # Load documents from file path
             loader = TextLoader(
-                file_path="/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/text_file.txt/text_file.txt"
+                file_path=self.__store_text_file
             )
             
             # Load documents using the loader
@@ -55,7 +55,6 @@ class Retrieval_Augmented_Generation:
             is_separator_regex=False
         )
         try:
-            # Load documents from PDF file path
             loader = PyPDFLoader(
                 file_path=file_path,
             )
@@ -63,6 +62,29 @@ class Retrieval_Augmented_Generation:
             print("Error to load pdf files")
         finally:
             docs = loader.load()
+            split = splitter.split_documents(
+                documents=docs
+            )
+            return split
+    
+    
+    def __load_text(self,text):
+        # define the spilter docs properties
+        chunks_size = 1000
+        chunks_overlap = 40
+        
+        splitter = RecursiveCharacterTextSplitter(
+            # Set a really small chunk size, just to show.
+            chunk_size=chunks_size,
+            chunk_overlap=chunks_overlap,
+            length_function=len,
+            is_separator_regex=False
+        )
+        try:
+            docs = [Document(page_content=x) for x in splitter.split_text(text)]
+        except Exception as e:
+            print("Error to load files")
+        finally:
             split = splitter.split_documents(
                 documents=docs
             )
@@ -98,16 +120,27 @@ class Retrieval_Augmented_Generation:
         
         return embeddings
     
-    def VectorDatabase(self, is_pdf=False,file_url=None):
+    def VectorDatabase(self, is_pdf=False,
+                       text=None,
+                       pdf_file=None, 
+                       is_pdf_file=False):
         # Define chunk size and overlap for splitting
         chunk_size = 1000
         chunk_overlap = 50
         
+        if is_pdf and is_pdf_file:
+           raise ValueError("You cannot load two pdf files. Please specify only one.")
+        
         if is_pdf:
-            split = self.__load_pdf(
-                file_path=file_url
+            split = self.__load_text(
+                text=text
             )
             print("Load Pdf data Done...")
+        elif is_pdf_file:
+            split = self.__load_pdf(
+                file_path=pdf_file
+            )
+            print("Load File..")
         else:
             split = self.__text_spliter(
                 chunks_size=chunk_size,

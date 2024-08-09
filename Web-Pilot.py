@@ -4,6 +4,7 @@ import re
 from RAG_QnA import RAG_Model
 from scrap import Scraper
 import requests
+import PyPDF2
 
 # Initialize the model only once and store it in the session state
 if "model" not in st.session_state:
@@ -46,7 +47,7 @@ if model != st.session_state.previous_model:
 
 if "scrap" not in st.session_state:
     st.session_state.scrap = Scraper()
-    print("Scrapping instance created")
+    print("Scraping instance created")
 
 # Add a flag to track if scraping and database loading are done
 if "scraping_done" not in st.session_state:
@@ -82,10 +83,29 @@ if "previous_url" not in st.session_state:
     st.session_state.previous_url = ""
     
 
-st.sidebar.file_uploader(
+file = st.sidebar.file_uploader(
     label="Upload your Pdf file.",
-    accept_multiple_files=False
+    accept_multiple_files=False,
+    type='pdf'
 )
+
+# Process file only if it's new and not processed before
+if file is not None and file.name != st.session_state.get("last_uploaded_file"):
+    name = file.name
+    pdf_reader = PyPDF2.PdfReader(file)
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+        
+        st.session_state.model.load_Database(
+            pdf_text=text,
+            is_pdf_file=True
+        )
+    
+        st.session_state.database_loaded = True
+        st.session_state.scraping_done = True
+        st.session_state.last_uploaded_file = file.name  # Mark this file as processed
+        st.sidebar.success("Loaded PDF successfully.")
 
 if url and url != st.session_state.previous_url:
     st.session_state.previous_url = url
