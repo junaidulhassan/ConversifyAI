@@ -9,7 +9,7 @@ import PyPDF2
 st.set_page_config(
     page_title='Conversify AI', 
     layout = 'centered',
-    page_icon = 'Web_pilot/Images/brain_logo.jpeg', 
+    page_icon = '/Images/brain_logo.jpeg', 
     initial_sidebar_state = 'auto',
 )
 # Initialize the model only once and store it in the session state
@@ -204,9 +204,9 @@ if "messages" not in st.session_state:
 
 def get_avatar(role):
     if role == "user":
-        return "Web_pilot/Images/brain_logo.jpeg"
+        return "/Images/brain_logo.jpeg"
     else:
-        return 'Web_pilot/Images/sparkledny.jpeg'
+        return '/Images/sparkledny.jpeg'
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
