@@ -6,10 +6,17 @@ from scrap import Scraper
 import requests
 import PyPDF2
 
+st.set_page_config(
+    page_title='Conversify AI', 
+    layout = 'centered',
+    page_icon = '/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Images/brain_logo.jpeg', 
+    initial_sidebar_state = 'auto',
+)
 # Initialize the model only once and store it in the session state
 if "model" not in st.session_state:
     st.session_state.model = RAG_Model()
     print("Model initialized")
+    
 
 def is_valid_url(url):
     regex = re.compile(
@@ -21,6 +28,15 @@ def is_valid_url(url):
         r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return re.match(regex, url) is not None
+
+def is_youtube_url(url):
+    youtube_regex = re.compile(
+        r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/.+',
+        re.IGNORECASE
+    )
+    return re.match(youtube_regex, url) is not None
+
+st.sidebar.header("Data Source Selection",divider='rainbow')
 
 options = {
     "Llama-3-8b-instruct": 0,
@@ -71,9 +87,16 @@ def is_pdf_url(url):
         print(f"Request failed: {e}")
         return False
 
+    
+file = st.sidebar.file_uploader(
+    label="Upload your Pdf file.",
+    accept_multiple_files=False,
+    type='pdf'
+)
+
 # Input field for the URL
 url = st.sidebar.text_input(
-    "Enter website URL you want to chat", 
+    "Enter website or Youtube Video URL you want to chat", 
     "",
     placeholder="https://example.com"
 )
@@ -83,12 +106,6 @@ if "previous_url" not in st.session_state:
     st.session_state.previous_url = ""
     
 
-file = st.sidebar.file_uploader(
-    label="Upload your Pdf file.",
-    accept_multiple_files=False,
-    type='pdf'
-)
-
 # Process file only if it's new and not processed before
 if file is not None and file.name != st.session_state.get("last_uploaded_file"):
     name = file.name
@@ -97,15 +114,16 @@ if file is not None and file.name != st.session_state.get("last_uploaded_file"):
     for page in pdf_reader.pages:
         text += page.extract_text()
         
-        st.session_state.model.load_Database(
-            pdf_text=text,
-            is_pdf_file=True
-        )
+    st.text_area(label="PDF",value = text, height=30)
+    st.session_state.model.load_Database(
+        pdf_text=text,
+        is_pdf_file=True
+    )
     
-        st.session_state.database_loaded = True
-        st.session_state.scraping_done = True
-        st.session_state.last_uploaded_file = file.name  # Mark this file as processed
-        st.sidebar.success("Loaded PDF successfully.")
+    st.session_state.database_loaded = True
+    st.session_state.scraping_done = True
+    st.session_state.last_uploaded_file = file.name  # Mark this file as processed
+    st.sidebar.success("Loaded PDF successfully.")
 
 if url and url != st.session_state.previous_url:
     st.session_state.previous_url = url
@@ -118,6 +136,17 @@ if url and url != st.session_state.previous_url:
             st.session_state.database_loaded = True
             st.session_state.scraping_done = True
             st.sidebar.success("Loaded PDF successfully.")
+            
+        elif is_youtube_url(url=url):
+            st.session_state.model.load_Database(
+                youtube_url = url,
+                is_youtube_url = True
+            )
+            print("This is Youtube Video URL...")
+            st.session_state.database_loaded = True
+            st.session_state.scraping_done = True
+            st.sidebar.success("Loaded Youtube Video successfully.")
+            
         else:
             try:
                 response = st.session_state.scrap.scrape_website(
@@ -137,9 +166,9 @@ if url and url != st.session_state.previous_url:
 elif url == "":
     st.session_state.scraping_done = False
 
-if st.sidebar.button("Clear Chat"):
-    st.session_state.messages = []
-    st.rerun()
+# if st.sidebar.button("Clear Chat"):
+#     st.session_state.messages = []
+#     st.rerun()
 
 if st.sidebar.button("Clear Chat History"):
     st.session_state.messages = []
@@ -154,27 +183,39 @@ def response_generator(prompt):
     return response
 
 st.markdown(
-    body='<div style="text-align: center;"><h1>WebDocs-PILOT</h1></div>', 
+    body='<div style="text-align: center;"><h1>Conversify AI</h1></div>', 
     unsafe_allow_html=True
 )
 
 st.markdown(
-    body='<div style="text-align: center;">Chat with Any Website and Docs 😊</div>', 
+    body='<div style="text-align: center;">Explore large Contents in seconds 😊</div>', 
     unsafe_allow_html=True
 )
+
+st.markdown("""<style>
+            .chat-messages {
+            margin-bottom: 70px;
+            }
+        </style>""", unsafe_allow_html=True)
 
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+def get_avatar(role):
+    if role == "user":
+        return "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Images/brain_logo.jpeg"
+    else:
+        return '/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Images/sparkledny.jpeg'
+
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+    with st.chat_message(message["role"], avatar=get_avatar(message["role"])):
         st.markdown(message["content"])
 
 # Accept user input
 if prompt := st.chat_input("Enter your prompt here..."):
-    if st.session_state.scraping_done:
+    if st.session_state.scraping_done or st.session_state.database_loaded:
         if st.session_state.database_loaded:
             # Add user message to chat history
             st.session_state.messages.append({
@@ -182,11 +223,13 @@ if prompt := st.chat_input("Enter your prompt here..."):
                 "content": prompt
             })
             # Display user message in chat message container
-            with st.chat_message("user"):
+            with st.chat_message("user", 
+                                 avatar=get_avatar("user")):
                 st.markdown(prompt)
 
             # Display assistant response in chat message container
-            with st.chat_message("assistant"):
+            with st.chat_message("assistant", 
+                                 avatar=get_avatar("assistant")):
                 with st.spinner("Generating response..."):
                     response = ""
                     response_container = st.empty()  # Create an empty container for the response
@@ -194,16 +237,21 @@ if prompt := st.chat_input("Enter your prompt here..."):
                         prompt=prompt
                         ):
                         response += word
-                        response_container.markdown(response.replace("\n", "  \n") + "▌")  # Add double space for markdown newline
+                        response_container.markdown(
+                            body=response.replace("\n", "  \n") + "▌"
+                        )  # Add double space for markdown newline
                         time.sleep(0.03)
-                        response_container.markdown(response.replace("\n", "  \n"))  # Add double space for markdown newline
+                        response_container.markdown(
+                            body=response.replace("\n", "  \n")
+                        )  # Add double space for markdown newline
 
             # Add assistant response to chat history
             st.session_state.messages.append({
                 "role": "assistant", 
                 "content": response
             })
+            
         else:
-            st.error("Database is not loaded. Please add the website URL first.")
+            st.error("Database is not loaded. Please add the website URL or upload a PDF first.")
     else:
-        st.error("Please add the website URL first.")
+        st.error("Please add the website URL or upload a PDF first.")

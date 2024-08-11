@@ -94,13 +94,18 @@ class RAG_Model:
         #     stop_sequences=self.filter,
         # )
     
-    def load_Database(self,pdf_url=None,is_pdf = False,pdf_text = None, is_pdf_file=False):
+    def load_Database(self,pdf_url=None,is_pdf = False,
+                      pdf_text = None, is_pdf_file=False,
+                      youtube_url=None, is_youtube_url=False):
+        
         # create vector database for fetch knowledge from database
         self.database = self.rag.VectorDatabase(
             text=pdf_text,
             is_pdf_file=is_pdf_file,
-            file_url=pdf_url,
-            is_pdf=is_pdf
+            pdf_file=pdf_url,
+            is_pdf=is_pdf,
+            is_youtube_url=is_youtube_url,
+            youtube_url=youtube_url
         ) 
 
     def __PromptEngineering(self):

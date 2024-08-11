@@ -10,7 +10,7 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 
-from langchain.document_loaders import PyPDFLoader, TextLoader
+from langchain.document_loaders import PyPDFLoader, TextLoader,YoutubeLoader
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
@@ -60,12 +60,12 @@ class Retrieval_Augmented_Generation:
             )
         except Exception as e:
             print("Error to load pdf files")
-        finally:
-            docs = loader.load()
-            split = splitter.split_documents(
-                documents=docs
-            )
-            return split
+            
+        docs = loader.load()
+        split = splitter.split_documents(
+            documents=docs
+        )
+        return split
     
     
     def __load_text(self,text):
@@ -84,11 +84,37 @@ class Retrieval_Augmented_Generation:
             docs = [Document(page_content=x) for x in splitter.split_text(text)]
         except Exception as e:
             print("Error to load files")
-        finally:
-            split = splitter.split_documents(
-                documents=docs
+            
+        split = splitter.split_documents(
+            documents=docs
+        )
+            
+        return split
+
+    def __load_youtube_transcript(self,youtube_url):
+        # define the spilter docs properties
+        chunks_size = 1000
+        chunks_overlap = 40
+        splitter = RecursiveCharacterTextSplitter(
+            # Set a really small chunk size, just to show.
+            chunk_size=chunks_size,
+            chunk_overlap=chunks_overlap,
+            length_function=len,
+            is_separator_regex=False
+        )
+        try:
+            loader = YoutubeLoader.from_youtube_url(
+                youtube_url=youtube_url
             )
-            return split
+        except Exception as e:
+            print("Error to load files")
+        
+        docs = loader.load()
+        split = splitter.split_documents(
+            documents=docs
+        )
+            
+        return split
     
     def __text_spliter(self, chunks_size=500, chunks_overlap=50):
         # Define the chunks and overlap
@@ -123,24 +149,31 @@ class Retrieval_Augmented_Generation:
     def VectorDatabase(self, is_pdf=False,
                        text=None,
                        pdf_file=None, 
-                       is_pdf_file=False):
+                       is_pdf_file=False,
+                       youtube_url = None,
+                       is_youtube_url = False
+        ):
         # Define chunk size and overlap for splitting
         chunk_size = 1000
         chunk_overlap = 50
         
-        if is_pdf and is_pdf_file:
-           raise ValueError("You cannot load two pdf files. Please specify only one.")
+        if is_pdf and is_pdf_file and is_youtube_url:
+           raise ValueError("You cannot load two pdf files or Urls. Please specify only one.")
         
         if is_pdf:
-            split = self.__load_text(
-                text=text
-            )
-            print("Load Pdf data Done...")
-        elif is_pdf_file:
             split = self.__load_pdf(
                 file_path=pdf_file
             )
+            print("Load Pdf data Done...")
+        elif is_pdf_file:
+            split = self.__load_text(
+                text=text
+            )
             print("Load File..")
+        elif is_youtube_url:
+            split = self.__load_youtube_transcript(
+                youtube_url=youtube_url
+            )
         else:
             split = self.__text_spliter(
                 chunks_size=chunk_size,
