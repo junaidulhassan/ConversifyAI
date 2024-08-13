@@ -1,6 +1,6 @@
 # WEB-PILOT
 
-![image](https://github.com/user-attachments/assets/4940cb6e-66a8-4df8-a622-81ff09ed7de8)
+![image](https://github.com/user-attachments/assets/92b27a1b-207d-4f8b-a7d0-f96765e89742)
 
 
 ## Application Name: "WEB-PILOT"
