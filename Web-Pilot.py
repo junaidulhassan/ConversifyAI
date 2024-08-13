@@ -5,17 +5,60 @@ from RAG_QnA import RAG_Model
 from scrap import Scraper
 import requests
 import PyPDF2
+import requests
+from PIL import Image
+import io
+import base64
 
 st.set_page_config(
     page_title='Conversify AI', 
     layout = 'centered',
-    page_icon = '/Images/brain_logo.jpeg', 
+    page_icon = '/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Images/brain_logo.jpeg', 
     initial_sidebar_state = 'auto',
 )
 # Initialize the model only once and store it in the session state
 if "model" not in st.session_state:
     st.session_state.model = RAG_Model()
     print("Model initialized")
+    
+
+st.markdown(
+    r"""
+    <style>
+    .stDeployButton {
+            visibility: hidden;
+        }
+    </style>
+    """, unsafe_allow_html=True
+)
+
+st.markdown(body="""
+ <style>
+        div[class='css-4z1n4l ehezqtx5']{
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+        border-radius: 15px;
+        height: 40px;
+        max-width: 160px;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50%;
+    }
+</style>
+""", unsafe_allow_html=True
+)
+    
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
     
 
 def is_valid_url(url):
@@ -204,9 +247,9 @@ if "messages" not in st.session_state:
 
 def get_avatar(role):
     if role == "user":
-        return "/Images/brain_logo.jpeg"
+        return "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Images/brain_logo.jpeg"
     else:
-        return '/Images/sparkledny.jpeg'
+        return '/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/Images/sparkledny.jpeg'
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -215,6 +258,8 @@ for message in st.session_state.messages:
 
 # Accept user input
 if prompt := st.chat_input("Enter your prompt here..."):
+    if prompt.lower().startswith("imagine"):
+        pass
     if st.session_state.scraping_done or st.session_state.database_loaded:
         if st.session_state.database_loaded:
             # Add user message to chat history

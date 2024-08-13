@@ -10,7 +10,10 @@ from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory, ConversationBufferMemory
 from RAG import Retrieval_Augmented_Generation
 from langchain_openai import ChatOpenAI
+import io
 import os
+from PIL import Image
+import requests
 import openai
 
 # Define RAG_Model class
@@ -176,3 +179,18 @@ class RAG_Model:
         response = response['result']
         response = self.remove_unwanted_suffixes(response)
         return response
+    
+    def generateImage(self, prompt):
+        # Generate an image using the prompt chain
+        API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell"
+        headers = {"Authorization": self.api_key}
+        def query(payload):
+            response = requests.post(API_URL, headers=headers, json=payload)
+            return response.content
+        
+        image_bytes = query({
+            "inputs": prompt
+        })
+        # You can access the image with PIL.Image for example
+        image = Image.open(io.BytesIO(image_bytes))
+        return image
