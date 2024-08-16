@@ -42,7 +42,7 @@ In this notebook, we leverage the Mistral-7b-instruct model alongside the Langch
 
 #### Streamlit
 - **Purpose**: Front end.
-- **Benefits**: Offers an intuitive and visually appealing interface for user to interact with the application.
+- **Benefits**: Offers an intuitive and visually appealing interface for users to interact with the application.
   
 ![image](https://github.com/user-attachments/assets/b6abcc74-5614-4296-ad7f-f83ed9cafa8e)
 
