@@ -60,4 +60,4 @@ Retrieval Augmented Generation is a technique that enhances the capabilities of 
 - **Flexibility**: Allows the model to adapt to new information without the need for extensive retraining.
 - **Efficiency**: Reduces the time and computational resources required for fine-tuning.
 
-With "WEB-PILOT," users can experience a seamless and efficient way to interact with web content, making it a powerful tool for extracting and summarizing information, answering questions, and more.
+With "Conversify AI," users can experience a seamless and efficient way to interact with web content, making it a powerful tool for extracting and summarizing information, answering questions, and more.
