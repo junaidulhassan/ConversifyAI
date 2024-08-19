@@ -29,7 +29,7 @@ class ChatModel:
             memory_key='chat_history', 
             return_messages=False, 
             human_prefix='Human',
-            ai_prefix='Faraz',
+            ai_prefix='AI',
             verbose=False
         )
         
