@@ -5,7 +5,7 @@
 
 ## Application Name: "Conversify AI"
 
-"WEB-PILOT" is a sophisticated RAG (Retrieval Augmented Generation) application designed to interact seamlessly with website content, including vlogs and other materials. This application allows users to paste the URL of any website they want to engage with, enabling question-answering, summarization, and more, all with ease. 
+"Conversify AI" is a sophisticated RAG (Retrieval Augmented Generation) application designed to interact seamlessly with website content, including vlogs and other materials. This application allows users to paste the URL of any website they want to engage with, enabling question-answering, summarization, and more, all with ease. 
 
 ![image](https://miro.medium.com/v2/resize:fit:2000/1*-0ROJw3TW0-06m7QckWlPQ.png)
 
