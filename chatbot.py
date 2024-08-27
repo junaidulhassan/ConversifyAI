@@ -9,7 +9,8 @@ from langchain.prompts import MessagesPlaceholder
 import warnings as wn
 wn.filterwarnings('ignore')
 
-# now intialize the Mistral LLMs model 
+# now intialize the Mistral LLMs model
+# now its time bruh
 
 
 class MistralAI():
