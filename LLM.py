@@ -14,6 +14,9 @@ import requests
 import json
 import os
 import re
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # Define ChatModel class
 class ChatModel: 
