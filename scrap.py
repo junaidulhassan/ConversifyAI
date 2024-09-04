@@ -10,7 +10,7 @@ class Scraper:
     
     def __write_txt_file(self, text, string):
         # Define the file path
-        file_path = "/media/junaid-ul-hassan/248ac48e-ccd4-4707-a28b-33cb7a46e6dc/LLMs Projects/Web_pilot/text_file.txt/text_file.txt"
+        file_path = "/Web_pilot/text_file.txt/text_file.txt"
         line_length = 20
         
         # Format the text
