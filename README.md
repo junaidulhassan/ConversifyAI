@@ -34,14 +34,14 @@ In this notebook, we leverage the Mistral-7b-instruct model alongside the Langch
 
 #### Chroma DB
 - **Purpose**: Vector database.
-- **Benefits**: Efficient storage and retrieval of data, crucial for quick and accurate responses.
+- **Benefits**: Efficient data storage and retrieval, crucial for quick and accurate responses.
 
 #### Transformer Embedding
 - **Purpose**: Quick document search.
-- **Benefits**: Ensures that relevant information is retrieved swiftly, improving the responsiveness of the application.
+- **Benefits**: Ensures that relevant information is retrieved swiftly, improving the application's responsiveness.
 
 #### Streamlit
-- **Purpose**: Front end.
+- **Purpose**: Front end and text streaming
 - **Benefits**: Offers an intuitive and visually appealing interface for users to interact with the application.
   
 ![image](https://github.com/user-attachments/assets/b6abcc74-5614-4296-ad7f-f83ed9cafa8e)
