@@ -12,3 +12,6 @@ pytube==15.0.0
 youtube-transcript-api==0.6.2
 pypdf==4.3.1
 faiss-cpu
+matplotlib.pyplot
+numpy
+pandas
